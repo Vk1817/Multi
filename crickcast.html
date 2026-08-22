@@ -128,9 +128,10 @@ box-shadow:0 0 8px var(--cc-live);animation:pulse-red 1.5s ease-in-out infinite}
 background:linear-gradient(90deg,var(--cc-border2),transparent)}
 
 /* ---- Grid ---- */
-#ch-grid{position:relative;z-index:2;display:grid;
+#ch-grid,#fav-grid{position:relative;z-index:2;display:grid;
 grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
 gap:clamp(14px,2vw,22px);padding:0 clamp(16px,4vw,44px)}
+#fav-section{position:relative;z-index:2;margin-bottom:8px}
 
 /* ---- Channel card (structure fixed by JS) ---- */
 .ch-card{position:relative;background:linear-gradient(180deg,var(--cc-panel2),var(--cc-panel));
@@ -139,7 +140,7 @@ text-decoration:none;display:flex;flex-direction:column;
 transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .35s;
 -webkit-tap-highlight-color:transparent;
 box-shadow:0 2px 10px rgba(0,0,0,.25);
-opacity:0;animation:cardIn .6s cubic-bezier(.2,.7,.2,1) forwards}
+animation:cardIn .6s cubic-bezier(.2,.7,.2,1) both}
 @keyframes cardIn{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:none}}
 .ch-card:nth-child(1){animation-delay:.03s}.ch-card:nth-child(2){animation-delay:.08s}
 .ch-card:nth-child(3){animation-delay:.13s}.ch-card:nth-child(4){animation-delay:.18s}
@@ -313,8 +314,74 @@ white-space:nowrap;pointer-events:none}
 border:2px solid var(--cc-bg)}
 #channel-list::-webkit-scrollbar-track{background:transparent}
 
+/* ================= HOMEPAGE TOOLBAR: SEARCH + CHIPS ================= */
+.cc-toolbar{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+padding:0 clamp(16px,4vw,44px) 20px}
+.cc-search{position:relative;display:flex;align-items:center;flex:1 1 240px;min-width:200px;max-width:440px}
+.cc-search .ic{position:absolute;left:14px;width:16px;height:16px;color:var(--cc-muted);pointer-events:none}
+#cc-search-input{width:100%;padding:12px 40px;border-radius:13px;
+background:rgba(9,14,11,.72);border:1px solid var(--cc-border2);color:var(--cc-text);
+font-family:inherit;font-size:13.5px;font-weight:500;outline:none;
+transition:border-color .2s,box-shadow .2s}
+#cc-search-input::placeholder{color:var(--cc-muted)}
+#cc-search-input:focus{border-color:rgba(52,211,153,.5);box-shadow:0 0 0 3px rgba(16,185,129,.13)}
+#cc-search-clear{position:absolute;right:8px;display:none;width:26px;height:26px;border:none;
+border-radius:50%;background:rgba(255,255,255,.06);color:var(--cc-muted);cursor:pointer;
+align-items:center;justify-content:center;font-size:17px;line-height:1;
+transition:background .2s,color .2s}
+#cc-search-clear:hover{background:rgba(255,255,255,.12);color:#fff}
+.cc-chips{display:flex;gap:8px;flex-wrap:wrap}
+.cc-chip{padding:9px 15px;border-radius:99px;border:1px solid var(--cc-border2);
+background:rgba(9,14,11,.5);color:var(--cc-muted);font-family:inherit;font-size:12px;font-weight:700;
+letter-spacing:.4px;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;
+transition:color .2s,background .2s,border-color .2s,transform .2s,box-shadow .2s}
+.cc-chip:hover{color:#fff;transform:translateY(-1px)}
+.cc-chip.active{background:linear-gradient(135deg,var(--cc-accent-3),var(--cc-accent-deep));
+color:#fff;border-color:rgba(52,211,153,.5);box-shadow:0 6px 16px rgba(6,95,70,.4)}
+
+/* ---- Favourite star ---- */
+.ch-star{position:absolute;top:9px;right:9px;z-index:4;width:32px;height:32px;border-radius:50%;
+border:1px solid rgba(255,255,255,.14);background:rgba(7,11,9,.62);
+backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+display:flex;align-items:center;justify-content:center;cursor:pointer;color:#d3ddd7;
+opacity:0;transform:scale(.82) translateY(-2px);
+transition:opacity .25s,transform .25s,color .2s,background .2s,border-color .2s}
+.ch-card:hover .ch-star{opacity:1;transform:none}
+.ch-star svg{width:15px;height:15px;pointer-events:none}
+.ch-star:hover{background:rgba(9,14,11,.9);border-color:rgba(234,179,8,.5);color:var(--cc-gold);transform:scale(1.08)}
+.ch-star:active{transform:scale(.9)}
+.ch-star.on{opacity:1;transform:none;color:var(--cc-gold);
+border-color:rgba(234,179,8,.55);background:rgba(234,179,8,.15)}
+.ch-star.on svg{fill:var(--cc-gold)}
+@media (hover:none){.ch-star{opacity:1;transform:none}}
+
+/* ---- Branded fallback poster ---- */
+.ch-fallback{position:absolute;inset:0;display:flex;flex-direction:column;
+align-items:center;justify-content:center;gap:9px;padding:14px;text-align:center;overflow:hidden;
+background:radial-gradient(120% 120% at 50% 22%,rgba(16,185,129,.15),transparent 60%),linear-gradient(160deg,#101a14,#0a0f0c)}
+.ch-fallback::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;
+background:var(--logo) center/72% no-repeat}
+.ch-fallback .fb-logo{width:46px;height:46px;z-index:1;
+background:var(--logo) center/contain no-repeat;filter:drop-shadow(0 6px 14px rgba(0,0,0,.55))}
+.ch-fallback .fb-name{z-index:1;color:#c8d2cc;font-size:12px;font-weight:700;line-height:1.3;
+display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ch-fallback .fb-tag{z-index:1;font-family:'Archivo';font-size:8.5px;font-weight:800;
+letter-spacing:2.5px;color:var(--cc-accent-2);opacity:.85}
+
+/* ---- My Channels badge + empty state ---- */
+.grid-head .fav-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:99px;
+border:1px solid rgba(234,179,8,.32);background:rgba(234,179,8,.08);
+font-size:10px;font-weight:800;letter-spacing:1px;color:var(--cc-gold)}
+.cc-empty{position:relative;z-index:2;margin:10px clamp(16px,4vw,44px) 0;padding:44px 20px;
+text-align:center;color:var(--cc-muted);font-size:14px;font-weight:600;
+border:1px dashed var(--cc-border2);border-radius:16px;background:rgba(9,14,11,.4)}
+
 @media (max-width:520px){
-#ch-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:13px}
+#ch-grid,#fav-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:13px}
+.cc-toolbar{flex-direction:column;align-items:stretch}
+.cc-search{max-width:none}
+.cc-chips{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.cc-chips::-webkit-scrollbar{display:none}
 .brand-name{font-size:19px}
 .brand-logo{width:40px;height:40px}
 #tg-link{padding:8px 13px 8px 11px;font-size:12px}
@@ -363,12 +430,35 @@ border:2px solid var(--cc-bg)}
 <span><i></i><em>LIVE CRICKET</em></span><span><i></i><em>HD STREAMS</em></span><span><i></i><em>ZERO BUFFERING</em></span><span><i></i><em>ALL MATCHES</em></span><span><i></i><em>WATCH FREE</em></span><span><i></i><em>MULTI QUALITY</em></span>
 </div>
 </div>
+<div class="cc-toolbar">
+<div class="cc-search">
+<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+<input id="cc-search-input" type="text" placeholder="Search channels…" autocomplete="off" spellcheck="false">
+<button id="cc-search-clear" type="button" aria-label="Clear search">&times;</button>
+</div>
+<div class="cc-chips" id="cc-chips">
+<button class="cc-chip active" type="button" data-cat="All">All</button>
+<button class="cc-chip" type="button" data-cat="Sports">Sports</button>
+<button class="cc-chip" type="button" data-cat="HD">HD</button>
+<button class="cc-chip" type="button" data-cat="Kids">Kids</button>
+<button class="cc-chip" type="button" data-cat="Entertainment">Entertainment</button>
+</div>
+</div>
+<div id="fav-section" style="display:none">
 <div class="grid-head">
+<h2>My Channels</h2>
+<span class="fav-badge">★ FAVOURITES</span>
+<span class="rule"></span>
+</div>
+<div id="fav-grid"></div>
+</div>
+<div class="grid-head" id="live-head">
 <h2>Live Channels</h2>
 <span class="lv">LIVE NOW</span>
 <span class="rule"></span>
 </div>
 <div id="ch-grid"></div>
+<div class="cc-empty" id="cc-empty" style="display:none">No channels match your search.</div>
 </div>
 <a id="tg-link" href="https://t.me/+BMRZLxqFMctjMjU1" target="_blank" rel="noopener" title="Join CRICKCAST on Telegram">
 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.05 3.16 2.53 10.33c-1.24.5-1.23 1.19-.23 1.5l4.76 1.48 1.84 5.6c.22.6.36.85.7.85.27 0 .39-.12.53-.27l1.9-1.85 4.68 3.45c.86.48 1.48.23 1.7-.8l3.06-14.3c.3-1.28-.48-1.85-1.42-1.83zM8.4 14.02l9.2-8.24c.4-.36-.09-.53-.6-.2l-11.3 7.1-4.66-1.46c-1.01-.32-1.03-1.01.22-1.5L20.35 4.5c.85-.32 1.6.2 1.32 1.5"/></svg>
@@ -419,6 +509,10 @@ var $loadMsg = document.getElementById("loadMsg");
 var $status = document.getElementById("status");
 var $list = document.getElementById("channel-list");
 var $grid = document.getElementById("ch-grid");
+var $favGrid = document.getElementById("fav-grid");
+var $favSection = document.getElementById("fav-section");
+var $liveHead = document.getElementById("live-head");
+var $empty = document.getElementById("cc-empty");
 var $pc = document.getElementById("pc");
 var $vid = document.getElementById("v");
 var $watermark = document.getElementById("cc-watermark");
@@ -448,6 +542,7 @@ fill: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="
 cover: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M6 7l3 3m0 0H7m2 0V8m9-1l-3 3m0 0h2m-2 0V8M6 13l3-3m0 0H7m2 0v2m9 1l-3-3m0 0h2m-2 0v2"/></svg>'
 };
 var PIP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="12" width="7" height="5" rx="1" fill="currentColor" stroke="none"/></svg>';
+var STAR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 function toast(msg,type,dur){
 $status.textContent=msg;
 $status.className="show "+(type||"ok");
@@ -471,14 +566,29 @@ var d=await r.json();
 if(!d||!Array.isArray(d.channels)||!d.channels.length) throw new Error("empty");
 return d;
 }
-function renderList(channels){
-hideOverlay();
-document.getElementById("tg-link").style.display="flex";
-var f=document.createDocumentFragment();
-channels.forEach(function(ch){
+var ALL=[], state={cat:"All",q:""}, firstPaint=true, wired=false;
+function getFavs(){ try{ return JSON.parse(localStorage.getItem("cc_favs")||"[]"); }catch(_){ return []; } }
+function setFavs(a){ try{ localStorage.setItem("cc_favs",JSON.stringify(a)); }catch(_){} }
+function isFav(id){ return getFavs().indexOf(id)!==-1; }
+function toggleFav(id){ var f=getFavs(),i=f.indexOf(id); if(i===-1) f.push(id); else f.splice(i,1); setFavs(f); }
+function matchCat(name,cat){
+if(cat==="All") return true;
+var n=(name||"").toLowerCase();
+if(cat==="Sports") return /sport|cricket|willow|\bten\b|ptv/.test(n);
+if(cat==="HD") return /\bhd\b/.test(n);
+if(cat==="Kids") return /kids|pogo|nick|cartoon|disney|chutti|hungama|baby/.test(n);
+if(cat==="Entertainment") return !/sport|cricket|willow|kids|pogo|nick|cartoon|disney|chutti|hungama|baby|news/.test(n);
+return true;
+}
+function passes(ch){
+var okQ=!state.q || (ch.name||"").toLowerCase().indexOf(state.q)!==-1;
+return okQ && matchCat(ch.name,state.cat);
+}
+function makeCard(ch){
 var a=document.createElement("a");
 a.className="ch-card";
 a.href="?id="+encodeURIComponent(ch.id);
+if(!firstPaint) a.style.animation="none";
 var poster=document.createElement("div");
 poster.className="ch-poster";
 if(ch.poster){
@@ -486,16 +596,68 @@ var img=document.createElement("img");
 img.src=ch.poster; img.loading="lazy"; img.alt="";
 poster.appendChild(img);
 } else {
-poster.innerHTML='<span class="ph">NO POSTER</span>';
+var fb=document.createElement("div");
+fb.className="ch-fallback";
+fb.innerHTML="<span class='fb-logo'></span><span class='fb-tag'>CRICKCAST</span>";
+poster.appendChild(fb);
 }
+var star=document.createElement("button");
+star.type="button";
+star.className="ch-star"+(isFav(ch.id)?" on":"");
+star.title="Add to My Channels";
+star.setAttribute("aria-label","Favourite");
+star.innerHTML=STAR_SVG;
+star.addEventListener("click",function(e){ e.preventDefault(); e.stopPropagation(); toggleFav(ch.id); render(); });
+poster.appendChild(star);
 var info=document.createElement("div");
 info.className="ch-info";
 info.innerHTML="<span class='name'>"+ch.name+"</span><span class='ch-live-tag'>LIVE</span>";
 a.appendChild(poster);
 a.appendChild(info);
-f.appendChild(a);
+return a;
+}
+function render(){
+var favIds=getFavs(), favEls=[], mainEls=[];
+ALL.forEach(function(ch){
+if(!passes(ch)) return;
+if(favIds.indexOf(ch.id)!==-1) favEls.push(makeCard(ch));
+else mainEls.push(makeCard(ch));
 });
-$grid.appendChild(f);
+$favGrid.innerHTML="";
+if(favEls.length){ favEls.forEach(function(e){ $favGrid.appendChild(e); }); $favSection.style.display="block"; }
+else $favSection.style.display="none";
+$grid.innerHTML="";
+mainEls.forEach(function(e){ $grid.appendChild(e); });
+$liveHead.style.display=mainEls.length?"flex":"none";
+$empty.style.display=(favEls.length+mainEls.length)?"none":"block";
+firstPaint=false;
+}
+function wireToolbar(){
+if(wired) return; wired=true;
+var inp=document.getElementById("cc-search-input");
+var clr=document.getElementById("cc-search-clear");
+inp.addEventListener("input",function(){
+state.q=inp.value.trim().toLowerCase();
+clr.style.display=inp.value?"flex":"none";
+render();
+});
+clr.addEventListener("click",function(){ inp.value=""; state.q=""; clr.style.display="none"; inp.focus(); render(); });
+var chips=[].slice.call(document.querySelectorAll("#cc-chips .cc-chip"));
+chips.forEach(function(c){
+c.addEventListener("click",function(){
+chips.forEach(function(x){ x.classList.remove("active"); });
+c.classList.add("active");
+state.cat=c.getAttribute("data-cat");
+render();
+});
+});
+}
+function renderList(channels){
+hideOverlay();
+document.getElementById("tg-link").style.display="flex";
+ALL=channels;
+wireToolbar();
+render();
 $list.style.display="flex";
 }
 function errMsg(msg){ setMsg(msg); $overlay.style.display="flex"; toast(msg,"err",0); }
