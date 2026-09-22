@@ -1,0 +1,58 @@
+name: Add Adsterra Ads
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  add-ads:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Insert Adsterra scripts without changing site logic
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f index.html
+
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          pop = '<script src="https://pl31463831.profitableratecpmnetwork.com/b2/a6/5b/b2a65b2db2a0a63e9a88334e621f8a3b.js"></script>'
+          social = '<script src="https://pl31463832.profitableratecpmnetwork.com/c6/8c/52/c68c52e91bb0963b0f2636eb657cd605.js"></script>'
+
+          if pop not in s:
+              marker = '</head>'
+              if marker not in s:
+                  raise SystemExit('Closing </head> tag not found')
+              s = s.replace(marker, pop + '\n' + marker, 1)
+
+          if social not in s:
+              marker = '</body>'
+              if marker not in s:
+                  raise SystemExit('Closing </body> tag not found')
+              s = s.replace(marker, social + '\n' + marker, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit only if changed
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --quiet -- index.html; then
+            echo 'Ads already present; no change needed.'
+            exit 0
+          fi
+          git add index.html
+          git commit -m 'Add Adsterra popunder and social bar'
+          git push
