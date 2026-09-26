@@ -625,20 +625,38 @@ preload="none" x5-video-player-type="h5" x5-video-player-fullscreen="true"></vid
 "use strict";
 /* =========================================================
    CONFIG — set this to your own JSON feed URL.
-   Expected schema:
+
+   Supported API formats:
+
+   NEW:
+   {
+     "id": "204",
+     "name": "DD Sports",
+     "stream_url": "https://.../index.mpd",
+     "cookie": "...",
+     "cookie_expires": "...",
+     "key_id": "...",
+     "key": "...",
+     "logo": "https://..."
+   }
+
+   OLD:
    {
      "channels": [
        {
          "id": "match1",
          "name": "Team A vs Team B",
          "stream_url": "https://.../master.m3u8",
-         "poster": "https://.../poster.svg",   // optional
-         "type": "hls",                         // optional: "hls" | "dash" (auto-detected if omitted)
-         "key_id": "...",                       // optional — only if you use your own ClearKey DRM
-         "key": "..."                           // optional — pairs with key_id
+         "poster": "https://.../poster.svg",
+         "type": "hls",
+         "key_id": "...",
+         "key": "..."
        }
      ]
    }
+
+   The loader normalizes either format into {channels:[...]}.
+   JioTV cookie/token fields are preserved for the existing Shaka request filter.
 ========================================================= */
 var API = "https://raw.githubusercontent.com/sportlink10/playlist/refs/heads/main/star2.json";
 var $overlay = document.getElementById("overlay");
@@ -704,9 +722,60 @@ async function loadData(){
 var bustedUrl = API + (API.indexOf("?")!==-1?"&":"?") + "_t=" + Date.now();
 var r=await fetch(bustedUrl,{cache:"no-store",headers:{Accept:"application/json"}});
 if(!r.ok) throw new Error("HTTP "+r.status);
+
 var d=await r.json();
-if(!d||!Array.isArray(d.channels)||!d.channels.length) throw new Error("empty");
-return d;
+
+/*
+  API compatibility:
+  OLD:
+  { "channels": [ { id, name, stream_url, ... } ] }
+
+  NEW:
+  { id, name, stream_url, cookie, cookie_expires, key_id, key, logo }
+
+  Normalize the new response to the existing internal channels schema.
+*/
+
+function normalizeChannel(c){
+  if(!c || !c.stream_url) return null;
+
+  return {
+    id: String(c.id ?? ""),
+    name: c.name || "Live Channel",
+    stream_url: c.stream_url,
+    poster: c.poster || c.logo || "",
+    logo: c.logo || "",
+    type: c.type || (
+      String(c.stream_url).toLowerCase().includes(".mpd")
+        ? "dash"
+        : "hls"
+    ),
+    key_id: c.key_id || "",
+    key: c.key || "",
+    cookie: c.cookie || "",
+    cookie_expires: c.cookie_expires || ""
+  };
+}
+
+/* Old API format */
+if(d && Array.isArray(d.channels)){
+  var oldChannels=d.channels.map(normalizeChannel).filter(Boolean);
+  if(oldChannels.length) return {channels:oldChannels};
+}
+
+/* New API: one channel object */
+if(d && d.id != null && d.stream_url){
+  var one=normalizeChannel(d);
+  if(one) return {channels:[one]};
+}
+
+/* Also accept an API returning an array of channel objects */
+if(Array.isArray(d)){
+  var many=d.map(normalizeChannel).filter(Boolean);
+  if(many.length) return {channels:many};
+}
+
+throw new Error("Invalid API response");
 }
 var ALL=[], state={cat:"All",q:"",sort:"default"}, firstPaint=true, wired=false, heroBuilt=false;
 function getFavs(){ try{ return JSON.parse(localStorage.getItem("cc_favs")||"[]"); }catch(_){ return []; } }
